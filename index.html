@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Repositiorio de filmes</title>
+</head>
+<body>
+    
+    
+    
+    <section id="adicionar-filme">
+
+        <div class="form-container">
+            <h2>Adicionar Filme</h4>
+            <div class="flex-form">
+                <label for="title" >Titulo do filme</label>
+                <input id = "title" type="text" name="title">
+            </div>
+            <div  class="flex-form">
+                <label for="duration">Duracao em minutos</label>
+                <input id="duration" type="text" name="duration">
+            </div>
+            
+            <div  class="flex-form">
+                <label for="year" >Ano do filme</label>
+                <input id="year" type="text" name="year">
+            </div>
+            <button id="btn-criar"type="submit">adicionar</button>
+        </div>
+
+        
+        
+    </section>
+    
+    <section id="lista-filmes">
+        <h2>Lista de Filmes</h2>
+
+        <ul id="filmes">
+            
+        </ul>
+    </section>
+    
+
+    
+</body>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+       
+      
+        let dados = axios.get('http://localhost/filmes').then(response=> response.data);
+        let ul = document.querySelector("#filmes");
+
+        dados.then((filmes)=>{
+            filmes.forEach(filme => {
+                let li = document.createElement('li');
+                li.innerHTML = `<h4>${filme.title}</h4>
+                                <p>Duracao: ${filme.duration} minutos</p>
+                                <p>Ano de lançamento: ${filme.year}</p>
+                                
+                                `;
+
+                let buttonEdit = document.createElement('button');
+                buttonEdit.setAttribute('class', 'button editar');
+                buttonEdit.innerText='Editar';
+                ul.appendChild(li);
+                li.appendChild(buttonEdit);
+
+                buttonEdit.addEventListener('click', ()=>{
+                    editFilme(filme);
+                    
+                });
+
+
+                let button = document.createElement('button');
+                button.setAttribute('class', 'button excluir');
+                button.innerText='excluir';
+                ul.appendChild(li);
+                li.appendChild(button);
+
+                button.addEventListener('click', ()=>{
+                    deleteFilme(filme);
+                    
+                });
+
+
+
+
+
+            });
+        })
+
+        let btnCriar = document.querySelector('#btn-criar');
+
+        btnCriar.addEventListener('click', criarFilme)
+
+        function criarFilme(){
+            //title, duration, year
+
+            var title = document.querySelector('#title');
+            var duration = document.querySelector("#duration");
+            var year = document.querySelector('#year');
+
+            const filme = {
+                title: title.value,
+                duration: duration.value,
+                year: year.value
+            }
+            
+            axios.post('http://localhost/filme', filme).then(response=>{
+                if(response.status ==200){
+                    alert(filme.title + " criado com sucesso");
+                    window.location.reload()
+                }
+            })
+            .catch((erro)=>{
+                alert(erro);
+            })
+            
+        }
+
+        function deleteFilme(filme){
+            const id  = filme.id;
+
+            axios.delete(`http://localhost/filme/${id}`).then((response)=>{
+                alert(`${filme.title} deletado`);
+                window.location.reload()
+            })
+
+        }
+
+        function editFilme(filmeAntigo){
+            let h2Form = document.querySelector('.form-container h2');
+            h2Form.innerText = "Editar Filme";
+            
+            let buttonForm = document.querySelector('#btn-criar');
+            buttonForm.innerText = "Editar";
+            buttonForm.removeEventListener('click', criarFilme)
+
+            let inputTitle = document.querySelector('.flex-form #title');
+            inputTitle.value = filmeAntigo.title;
+
+            let inputDuration = document.querySelector('.flex-form #duration');
+            inputDuration.value = filmeAntigo.duration;
+            
+            let inputYear = document.querySelector('.flex-form #year');
+            inputYear.value = filmeAntigo.year;
+
+            buttonForm.addEventListener('click', ()=>{
+
+                let filme = {
+                    title: inputTitle.value,
+                    duration: inputDuration.value,
+                    year: inputYear.value 
+                }
+
+                axios.put(`http://localhost/filme/${filmeAntigo.id}`, filme).then(response=>{
+                    if(response.status ==200){
+                        alert(filme.title + " atualizado com suceso");
+                        window.location.reload()
+                    }
+                })
+                .catch((erro)=>{
+                    alert(erro);
+                })
+            });
+            
+        }
+
+        
+        
+
+
+    </script>
+
+</html>
